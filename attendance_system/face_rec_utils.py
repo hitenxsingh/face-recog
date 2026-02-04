@@ -188,3 +188,36 @@ def mark_attendance(name):
         writer.writerow([name, date_str, time_str, ""])
     
     return True
+
+def delete_user(user_id):
+    """
+    Deletes the dataset folder for the given user ID and the trainer file.
+    Returns True if successful, False otherwise.
+    """
+    if not os.path.exists(DATASET_DIR):
+        return False
+        
+    deleted = False
+    for folder in os.listdir(DATASET_DIR):
+        try:
+            uid = int(folder.split('.')[0])
+            if uid == user_id:
+                folder_path = os.path.join(DATASET_DIR, folder)
+                # Remove all files in the folder
+                for file in os.listdir(folder_path):
+                    os.path.join(folder_path, file)
+                    os.remove(os.path.join(folder_path, file))
+                # Remove the folder itself
+                os.rmdir(folder_path)
+                deleted = True
+                break
+        except:
+            pass
+            
+    if deleted:
+        # If we deleted a user, the model is now outdated.
+        # We should delete the trainer file so the user knows to retrain.
+        if os.path.exists(os.path.join(TRAINER_DIR, TRAINER_FILE)):
+            os.remove(os.path.join(TRAINER_DIR, TRAINER_FILE))
+            
+    return deleted
