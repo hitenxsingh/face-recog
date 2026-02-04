@@ -34,8 +34,22 @@ st.markdown("""
 st.sidebar.title("👤 Face Attendance")
 choice = st.sidebar.radio("Navigation", ["🏠 Home", "📷 Mark Attendance", "⚙️ Manage Users"], label_visibility="collapsed")
 
-# RTC Configuration
-RTC_CONFIG = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+# RTC Configuration for WebRTC
+RTC_CONFIG = RTCConfiguration({
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]}
+    ]
+})
+
+# Workaround for localhost camera access (browser security)
+MEDIA_STREAM_CONSTRAINTS = {
+    "video": {
+        "width": {"min": 640, "ideal": 1280, "max": 1920},
+        "height": {"min": 480, "ideal": 720, "max": 1080},
+    },
+    "audio": False
+}
 
 # --- Processors ---
 class RegistrationProcessor(VideoProcessorBase):
@@ -131,7 +145,7 @@ if "🏠 Home" in choice:
     
     if os.path.exists(utils.ATTENDANCE_FILE):
         df = pd.read_csv(utils.ATTENDANCE_FILE)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
         
         # Admin Controls for Demo
         with st.expander("Admin Controls (Demo Only)"):
@@ -161,11 +175,12 @@ elif "⚙️ Manage Users" in choice:
                 key="registration", 
                 video_processor_factory=RegistrationProcessor,
                 rtc_configuration=RTC_CONFIG,
-                media_stream_constraints={"video": True, "audio": False}
+                media_stream_constraints=MEDIA_STREAM_CONSTRAINTS,
+                async_processing=True
             )
         
         if ctx.video_processor:
-            if st.button("📸 Start Capture", type="primary", use_container_width=True):
+            if st.button("📸 Start Capture", type="primary"):
                 if not name_input:
                     st.toast("Please enter a name first!", icon="⚠️")
                 else:
@@ -217,5 +232,6 @@ elif "📷 Mark" in choice:
                 key="attendance",
                 video_processor_factory=AttendanceProcessor,
                 rtc_configuration=RTC_CONFIG,
-                media_stream_constraints={"video": True, "audio": False}
+                media_stream_constraints=MEDIA_STREAM_CONSTRAINTS,
+                async_processing=True
             )
