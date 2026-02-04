@@ -35,7 +35,24 @@ st.sidebar.title("👤 Face Attendance")
 choice = st.sidebar.radio("Navigation", ["🏠 Home", "📷 Mark Attendance", "⚙️ Manage Users"], label_visibility="collapsed")
 
 # RTC Configuration
-RTC_CONFIG = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+RTC_CONFIG = RTCConfiguration({
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun1.l.google.com:19302"]},
+        {"urls": ["stun:stun2.l.google.com:19302"]},
+        {"urls": ["stun:stun3.l.google.com:19302"]},
+        {"urls": ["stun:stun4.l.google.com:19302"]},
+    ]
+})
+
+# --- Cache Resource Loading ---
+@st.cache_resource
+def load_face_cascade():
+    return cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# We don't cache recognizer here because it changes when we train. 
+# But we can optimize by only reloading it when necessary or just keep it fast.
+# Since app re-runs on training, loading it fresh is safer for this simple app.
 
 # --- Processors ---
 class RegistrationProcessor(VideoProcessorBase):
@@ -44,7 +61,7 @@ class RegistrationProcessor(VideoProcessorBase):
         self.user_id = None
         self.save_path = None
         self.capturing = False
-        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        self.face_cascade = load_face_cascade()
 
     def update_config(self, user_id, save_path, capturing):
         self.user_id = user_id
@@ -73,7 +90,7 @@ class RegistrationProcessor(VideoProcessorBase):
 class AttendanceProcessor(VideoProcessorBase):
     def __init__(self):
         self.recognizer = utils.load_recognizer()
-        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        self.face_cascade = load_face_cascade()
         self.user_map = utils.get_user_map()
 
     def recv(self, frame):
