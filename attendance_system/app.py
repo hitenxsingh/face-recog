@@ -5,6 +5,7 @@ import face_rec_utils as utils
 import pandas as pd
 import os
 import av
+import time
 from streamlit_webrtc import webrtc_streamer, VideoProcessorBase, RTCConfiguration
 
 # Page config
@@ -31,7 +32,7 @@ st.markdown("""
 
 # Sidebar
 st.sidebar.title("👤 Face Attendance")
-choice = st.sidebar.radio("", ["🏠 Home", "📷 Mark Attendance", "⚙️ Manage Users"], label_visibility="collapsed")
+choice = st.sidebar.radio("Navigation", ["🏠 Home", "📷 Mark Attendance", "⚙️ Manage Users"], label_visibility="collapsed")
 
 # RTC Configuration
 RTC_CONFIG = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
