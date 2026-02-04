@@ -2,5 +2,5 @@ streamlit
 opencv-contrib-python-headless
 pandas
 numpy
-streamlit-webrtc
+streamlit-webrtc==0.47.0
 av
